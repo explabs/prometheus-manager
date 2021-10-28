@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
 
@@ -27,10 +28,28 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 	}
 	io.Copy(os.Stdout, out)
 
+	sourceConfigPath := os.Getenv("CONFIG")
+	destConfigPath := "/etc/prometheus/prometheus.yml"
+	sourceDataPath := os.Getenv("DATA")
+	destDataPath := "/data"
+
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image:   imageName,
-		Volumes: map[string]struct{}{},
-	}, nil, nil, nil, "prometheus")
+		Image: imageName,
+	}, &container.HostConfig{
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: sourceConfigPath,
+				Target: destConfigPath,
+			},
+			{
+				Type:   mount.TypeBind,
+				Source: sourceDataPath,
+				Target: destDataPath,
+			},
+		},
+		AutoRemove: true,
+	}, nil, nil, "prometheus")
 	if err != nil {
 		panic(err)
 	}
