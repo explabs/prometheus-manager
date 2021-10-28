@@ -38,12 +38,12 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 	}, &container.HostConfig{
 		Mounts: []mount.Mount{
 			{
-				Type:   mount.TypeBind,
+				Type:   mount.TypeVolume,
 				Source: sourceConfigPath,
 				Target: destConfigPath,
 			},
 			{
-				Type:   mount.TypeBind,
+				Type:   mount.TypeVolume,
 				Source: sourceDataPath,
 				Target: destDataPath,
 			},
