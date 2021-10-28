@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -27,10 +28,10 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	io.Copy(os.Stdout, out)
-
-	sourceConfigPath := os.Getenv("CONFIG")
+	pwd := os.Getenv("HOST_PWD")
+	sourceConfigPath := path.Join(pwd, os.Getenv("CONFIG"))
 	destConfigPath := "/etc/prometheus/prometheus.yml"
-	sourceDataPath := os.Getenv("DATA")
+	sourceDataPath := path.Join(pwd, os.Getenv("DATA"))
 	destDataPath := "/data"
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
@@ -38,12 +39,12 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 	}, &container.HostConfig{
 		Mounts: []mount.Mount{
 			{
-				Type:   mount.TypeVolume,
+				Type:   mount.TypeBind,
 				Source: sourceConfigPath,
 				Target: destConfigPath,
 			},
 			{
-				Type:   mount.TypeVolume,
+				Type:   mount.TypeBind,
 				Source: sourceDataPath,
 				Target: destDataPath,
 			},
