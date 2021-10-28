@@ -1,14 +1,35 @@
 package main
 
 import (
+	"crypto/subtle"
 	"net/http"
+	"os"
 
 	"github.com/explabs/prometheus-manager/routers"
 )
 
+func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		user, pass, ok := r.BasicAuth()
+
+		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+			w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+			w.WriteHeader(401)
+			w.Write([]byte("Unauthorised.\n"))
+			return
+		}
+
+		handler(w, r)
+	}
+}
+
 func main() {
-	http.HandleFunc("/start", routers.StartContainer)
-	http.HandleFunc("/stop", routers.StopContainert)
+	username := "admin"
+	password := os.Getenv("ADMIN_PASS")
+	http.HandleFunc("/start", BasicAuth(routers.StartContainer,  username, password, ""))
+	http.HandleFunc("/stop",  BasicAuth(routers.StopContainert,  username, password, ""))
 
 	http.ListenAndServe(":9091", nil)
 }

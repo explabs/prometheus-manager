@@ -59,5 +59,5 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Println(resp.ID)
+	fmt.Fprintf(w, "promtheus id: %s\n", resp.ID)
 }
