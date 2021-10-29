@@ -12,6 +12,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
 )
 
 func StartContainer(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +51,9 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		AutoRemove: true,
+		PortBindings: nat.PortMap{
+			nat.Port("9090/tcp"): []nat.PortBinding{{HostPort: "9090"}},
+		},
 	}, nil, nil, "prometheus")
 	if err != nil {
 		panic(err)
