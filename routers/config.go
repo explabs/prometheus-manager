@@ -1,5 +1,11 @@
 package routers
 
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
 type PrometheusConfig struct {
 	Global struct {
 		ScrapeInterval     string `yaml:"scrape_interval"`
@@ -9,18 +15,22 @@ type PrometheusConfig struct {
 	ScrapeConfigs []ScrapeConfigs `yaml:"scrape_configs"`
 }
 type ScrapeConfigs struct {
-	JobName       string `yaml:"job_name"`
-	StaticConfigs []struct {
-		Targets []string `yaml:"targets"`
-	} `yaml:"static_configs"`
-	MetricsPath string `yaml:"metrics_path,omitempty"`
-	BasicAuth   struct {
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-	} `yaml:"basic_auth,omitempty"`
-	ScrapeInterval string `yaml:"scrape_interval,omitempty"`
-	ScrapeTimeout  string `yaml:"scrape_timeout,omitempty"`
+	JobName        string        `yaml:"job_name"`
+	StaticConfigs  StaticConfigs `yaml:"static_configs"`
+	MetricsPath    string        `yaml:"metrics_path,omitempty"`
+	BasicAuth      BasicAuth     `yaml:"basic_auth,omitempty"`
+	ScrapeInterval string        `yaml:"scrape_interval,omitempty"`
+	ScrapeTimeout  string        `yaml:"scrape_timeout,omitempty"`
 }
+type StaticConfigs struct {
+	Targets []string `yaml:"targets"`
+}
+
+type BasicAuth struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
 type Jobs struct {
 	Jobs     []JsonData `json:"jobs"`
 	Password string     `json:"password"`
@@ -29,7 +39,7 @@ type Jobs struct {
 	Timeout  string     `json:"timeout"`
 }
 type JsonData struct {
-	Name 	 string	`json:"name"`
+	Name     string `json:"name"`
 	Path     string `json:"path"`
 	Interval string `json:"interval"`
 }
@@ -42,23 +52,30 @@ func (j *Jobs) ConvertToYml() error {
 
 	for _, job := range j.Jobs {
 		scrapeConfig := ScrapeConfigs{
-			JobName: job.Name,
-			StaticConfigs: []struct{}{[]string{j.Target},
-			MetricsPath: job.Path,
-			BasicAuth: struct{}{"checker", j.Password},
+			JobName:        job.Name,
+			MetricsPath:    job.Path,
+			StaticConfigs:  StaticConfigs{[]string{j.Target}},
+			BasicAuth:      BasicAuth{"checker", j.Password},
 			ScrapeInterval: job.Interval,
-			ScrapeTimeout: j.Timeout,
-		},
+			ScrapeTimeout:  j.Timeout,
+		}
+		p.ScrapeConfigs = append(p.ScrapeConfigs, scrapeConfig)
 	}
-	p.GenerateConfig
+	p.GenerateConfig("")
 	return nil
 }
 
-func (p *PrometheusConfig) GenerateConfig(filepath string) error {
-	fmt.Println(filepath, p)
+func (p *PrometheusConfig) GenerateConfig(filename string) error {
+	fmt.Println(filename, p)
 	return nil
 }
 
-func JsonParse(w http.ResponseWriter, r *http.Request){
-	
+func JsonParser(w http.ResponseWriter, r *http.Request) {
+	var j Jobs
+	err := json.NewDecoder(r.Body).Decode(&j)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 }
