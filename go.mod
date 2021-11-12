@@ -11,4 +11,5 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/grpc v1.41.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )
