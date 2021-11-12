@@ -3,7 +3,13 @@ package routers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
+	"path"
+
+	"gopkg.in/yaml.v2"
 )
 
 type PrometheusConfig struct {
@@ -14,14 +20,6 @@ type PrometheusConfig struct {
 	} `yaml:"global"`
 	ScrapeConfigs []ScrapeConfigs `yaml:"scrape_configs"`
 }
-type ScrapeConfigs struct {
-	JobName        string        `yaml:"job_name"`
-	StaticConfigs  StaticConfigs `yaml:"static_configs"`
-	MetricsPath    string        `yaml:"metrics_path,omitempty"`
-	BasicAuth      BasicAuth     `yaml:"basic_auth,omitempty"`
-	ScrapeInterval string        `yaml:"scrape_interval,omitempty"`
-	ScrapeTimeout  string        `yaml:"scrape_timeout,omitempty"`
-}
 type StaticConfigs struct {
 	Targets []string `yaml:"targets"`
 }
@@ -31,6 +29,14 @@ type BasicAuth struct {
 	Password string `yaml:"password"`
 }
 
+type ScrapeConfigs struct {
+	JobName        string          `yaml:"job_name"`
+	StaticConfigs  []StaticConfigs `yaml:"static_configs"`
+	MetricsPath    string          `yaml:"metrics_path,omitempty"`
+	BasicAuth      BasicAuth       `yaml:"basic_auth,omitempty"`
+	ScrapeInterval string          `yaml:"scrape_interval,omitempty"`
+	ScrapeTimeout  string          `yaml:"scrape_timeout,omitempty"`
+}
 type Jobs struct {
 	Jobs     []JsonData `json:"jobs"`
 	Password string     `json:"password"`
@@ -44,38 +50,57 @@ type JsonData struct {
 	Interval string `json:"interval"`
 }
 
+// curl -u admin:admin -H "Content-Type: application/json" --data '{ "password": "test", "target": "192.168.100.105:8080", "interval": "30s", "timeout": "10s", "jobs": [{"name": "checker", "path": "api/v1/game/checker"}]}' http://localhost:9091/generate
+
 func (j *Jobs) ConvertToYml() error {
-	var p *PrometheusConfig
+	var p PrometheusConfig
 	p.Global.ScrapeInterval = j.Interval
 	p.Global.ScrapeTimeout = j.Timeout
 	p.Global.EvaluationInterval = j.Interval
+	targets := StaticConfigs{Targets: []string{j.Target}}
+	auth := BasicAuth{"checker", j.Password}
 
 	for _, job := range j.Jobs {
 		scrapeConfig := ScrapeConfigs{
 			JobName:        job.Name,
+			StaticConfigs:  []StaticConfigs{targets},
 			MetricsPath:    job.Path,
-			StaticConfigs:  StaticConfigs{[]string{j.Target}},
-			BasicAuth:      BasicAuth{"checker", j.Password},
+			BasicAuth:      auth,
 			ScrapeInterval: job.Interval,
 			ScrapeTimeout:  j.Timeout,
 		}
 		p.ScrapeConfigs = append(p.ScrapeConfigs, scrapeConfig)
 	}
-	p.GenerateConfig("")
+	p.GenerateConfig(path.Join(os.Getenv("HOST_PWD"), os.Getenv("CONFIG")))
 	return nil
 }
 
-func (p *PrometheusConfig) GenerateConfig(filename string) error {
-	fmt.Println(filename, p)
-	return nil
-}
+func (p *PrometheusConfig) GenerateConfig(filepath string) error {
+	fmt.Println(filepath, p)
+	data, err := yaml.Marshal(&p)
 
-func JsonParser(w http.ResponseWriter, r *http.Request) {
-	var j Jobs
-	err := json.NewDecoder(r.Body).Decode(&j)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		log.Fatal(err)
 	}
 
+	err2 := ioutil.WriteFile(filepath, data, 0644)
+
+	if err2 != nil {
+
+		log.Fatal(err2)
+	}
+
+	fmt.Println("data written")
+	return nil
+}
+
+func JsonParse(w http.ResponseWriter, r *http.Request) {
+
+	var data Jobs
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(data)
+	data.ConvertToYml()
 }
