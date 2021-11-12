@@ -1,5 +1,10 @@
 package routers
 
+import (
+	"fmt"
+	"net/http"
+)
+
 type PrometheusConfig struct {
 	Global struct {
 		ScrapeInterval     string `yaml:"scrape_interval"`
@@ -42,15 +47,25 @@ func (j *Jobs) ConvertToYml() error {
 
 	for _, job := range j.Jobs {
 		scrapeConfig := ScrapeConfigs{
-			JobName: job.Name,
-			StaticConfigs: []struct{}{[]string{j.Target},
+			JobName:     job.Name,
+			StaticConfigs: []struct {
+				Targets []string `yaml:"targets"`
+			}{},
 			MetricsPath: job.Path,
-			BasicAuth: struct{}{"checker", j.Password},
+			BasicAuth: struct {
+				Username string `yaml:"username"`
+				Password string `yaml:"password"`
+			}{
+				Username: "checker",
+				Password: j.Password,
+			},
 			ScrapeInterval: job.Interval,
-			ScrapeTimeout: j.Timeout,
-		},
+			ScrapeTimeout:  j.Timeout,
+		}
+		fmt.Println(scrapeConfig)
 	}
-	p.GenerateConfig
+
+	p.GenerateConfig("")
 	return nil
 }
 
