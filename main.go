@@ -2,10 +2,9 @@ package main
 
 import (
 	"crypto/subtle"
+	"github.com/explabs/prometheus-manager/routers"
 	"net/http"
 	"os"
-
-	"github.com/explabs/prometheus-manager/routers"
 )
 
 func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.HandlerFunc {
