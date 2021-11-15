@@ -3,12 +3,11 @@ package routers
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"path"
+
+	"gopkg.in/yaml.v2"
 )
 
 type PrometheusConfig struct {
@@ -30,11 +29,11 @@ type BasicAuth struct {
 
 type ScrapeConfigs struct {
 	JobName        string          `yaml:"job_name"`
-	StaticConfigs  []StaticConfigs `yaml:"static_configs"`
 	MetricsPath    string          `yaml:"metrics_path,omitempty"`
-	BasicAuth      BasicAuth       `yaml:"basic_auth,omitempty"`
 	ScrapeInterval string          `yaml:"scrape_interval,omitempty"`
 	ScrapeTimeout  string          `yaml:"scrape_timeout,omitempty"`
+	StaticConfigs  []StaticConfigs `yaml:"static_configs"`
+	BasicAuth      BasicAuth       `yaml:"basic_auth,omitempty"`
 }
 type Jobs struct {
 	Jobs     []JsonData `json:"jobs"`
@@ -62,15 +61,15 @@ func (j *Jobs) ConvertToYml() error {
 	for _, job := range j.Jobs {
 		scrapeConfig := ScrapeConfigs{
 			JobName:        job.Name,
-			StaticConfigs:  []StaticConfigs{targets},
 			MetricsPath:    job.Path,
-			BasicAuth:      auth,
 			ScrapeInterval: job.Interval,
 			ScrapeTimeout:  j.Timeout,
+			StaticConfigs:  []StaticConfigs{targets},
+			BasicAuth:      auth,
 		}
 		p.ScrapeConfigs = append(p.ScrapeConfigs, scrapeConfig)
 	}
-	p.GenerateConfig(path.Join(os.Getenv("HOST_PWD"), os.Getenv("CONFIG")))
+	p.GenerateConfig(DestConfigPath)
 	return nil
 }
 
