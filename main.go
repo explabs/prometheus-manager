@@ -28,7 +28,7 @@ func main() {
 	username := "admin"
 	password := os.Getenv("ADMIN_PASS")
 	http.HandleFunc("/start", BasicAuth(routers.StartContainer, username, password, ""))
-	http.HandleFunc("/stop", BasicAuth(routers.StopContainert, username, password, ""))
+	http.HandleFunc("/stop", BasicAuth(routers.StopContainer, username, password, ""))
 	http.HandleFunc("/generate", BasicAuth(routers.GenerateConfigHandler, username, password, ""))
 	http.ListenAndServe(":9091", nil)
 }

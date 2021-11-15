@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func StopContainert(w http.ResponseWriter, r *http.Request) {
+func StopContainer(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
