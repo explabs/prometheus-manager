@@ -14,6 +14,9 @@ import (
 	"path"
 )
 
+var DestConfigPath = "/etc/prometheus/prometheus.yml"
+var DestDataPath = "/data"
+
 func StartContainer(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -30,9 +33,8 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 	io.Copy(os.Stdout, out)
 	pwd := os.Getenv("HOST_PWD")
 	sourceConfigPath := path.Join(pwd, os.Getenv("CONFIG"))
-	destConfigPath := "/etc/prometheus/prometheus.yml"
+
 	sourceDataPath := path.Join(pwd, os.Getenv("DATA"))
-	destDataPath := "/data"
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
@@ -41,12 +43,12 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 			{
 				Type:   mount.TypeBind,
 				Source: sourceConfigPath,
-				Target: destConfigPath,
+				Target: DestConfigPath,
 			},
 			{
 				Type:   mount.TypeBind,
 				Source: sourceDataPath,
-				Target: destDataPath,
+				Target: DestDataPath,
 			},
 		},
 		AutoRemove: true,
