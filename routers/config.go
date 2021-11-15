@@ -84,7 +84,6 @@ func (p *PrometheusConfig) GenerateConfig(filepath string) error {
 	err2 := ioutil.WriteFile(filepath, data, 0644)
 
 	if err2 != nil {
-
 		log.Fatal(err2)
 	}
 
@@ -92,7 +91,7 @@ func (p *PrometheusConfig) GenerateConfig(filepath string) error {
 	return nil
 }
 
-func JsonParse(w http.ResponseWriter, r *http.Request) {
+func GenerateConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 	var data Jobs
 	err := json.NewDecoder(r.Body).Decode(&data)
