@@ -3,16 +3,15 @@ package routers
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"path"
-
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"io"
+	"net/http"
+	"os"
+	"path"
 )
 
 func StartContainer(w http.ResponseWriter, r *http.Request) {

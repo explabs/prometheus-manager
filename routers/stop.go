@@ -3,9 +3,8 @@ package routers
 import (
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/docker/docker/client"
+	"net/http"
 )
 
 func StopContainert(w http.ResponseWriter, r *http.Request) {
