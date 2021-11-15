@@ -30,10 +30,6 @@ func main() {
 	password := os.Getenv("ADMIN_PASS")
 	http.HandleFunc("/start", BasicAuth(routers.StartContainer, username, password, ""))
 	http.HandleFunc("/stop", BasicAuth(routers.StopContainert, username, password, ""))
-<<<<<<< HEAD
-	http.HandleFunc("/generate", BasicAuth(routers.JsonParse, username, password, ""))
-=======
 	http.HandleFunc("/generate", BasicAuth(routers.GenerateConfigHandler, username, password, ""))
->>>>>>> 0b6ef4013ac27b6fe2a2d5e351b7bdc481df3907
 	http.ListenAndServe(":9091", nil)
 }
