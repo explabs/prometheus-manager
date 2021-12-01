@@ -7,16 +7,22 @@ import (
 	"net/http"
 )
 
-func StopContainer(w http.ResponseWriter, r *http.Request) {
+func StopRoute(w http.ResponseWriter, r *http.Request){
+	switch r.URL.Path {
+	case "/stop/prometheus":
+		StopContainer("prometheus")
+		fmt.Println(w, "prometheus stopped")
+	}
+}
+
+func StopContainer(containerName string) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	containerName := "prometheus"
 	if err := cli.ContainerStop(ctx, containerName, nil); err != nil {
-		fmt.Fprintf(w, "Unable to stop container %s: %s", containerName, err)
 	}
-	fmt.Fprintf(w, "prometheus stopped\n")
 }
+

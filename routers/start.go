@@ -17,26 +17,33 @@ import (
 var DestConfigPath = "/etc/prometheus/prometheus.yml"
 var DestDataPath = "/data"
 
-func StartContainer(w http.ResponseWriter, r *http.Request) {
+func StartRoute(w http.ResponseWriter, r *http.Request) {
+	switch r.URL.Path {
+	case "/start/prometheus":
+		StartContainer("prometheus", "prom/prometheus", "9091", os.Getenv("HOST_PWD"), os.Getenv("CONFIG"), os.Getenv("DATA"))
+		fmt.Println(w, "prometheus started")
+	// add case for another service
+
+	}
+}
+
+func StartContainer(containerName string, imageName string, port string, pwd string, config string, data string) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	imageName := "prom/prometheus"
-
 	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
 	io.Copy(os.Stdout, out)
-	pwd := os.Getenv("HOST_PWD")
-	sourceConfigPath := path.Join(pwd, os.Getenv("CONFIG"))
-
-	sourceDataPath := path.Join(pwd, os.Getenv("DATA"))
+	sourceConfigPath := path.Join(pwd, config)
+	sourceDataPath := path.Join(pwd, data)
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
+
 		Image: imageName,
 	}, &container.HostConfig{
 		Mounts: []mount.Mount{
@@ -53,9 +60,9 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 		},
 		AutoRemove: true,
 		PortBindings: nat.PortMap{
-			nat.Port("9090/tcp"): []nat.PortBinding{{HostPort: "9090"}},
+			nat.Port(port + "/" + "tcp"): []nat.PortBinding{{HostPort: port}},
 		},
-	}, nil, nil, "prometheus")
+	}, nil, nil, containerName)
 	if err != nil {
 		panic(err)
 	}
@@ -64,5 +71,4 @@ func StartContainer(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "promtheus id: %s\n", resp.ID)
 }
