@@ -1,1 +1,1 @@
-# prometheus-manager
+# service-manager
