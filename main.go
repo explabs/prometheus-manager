@@ -2,7 +2,7 @@ package main
 
 import (
 	"crypto/subtle"
-	"github.com/explabs/prometheus-manager/routers"
+	"github.com/explabs/service-manager/routers"
 	"net/http"
 	"os"
 )

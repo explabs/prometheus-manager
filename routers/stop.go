@@ -7,11 +7,14 @@ import (
 	"net/http"
 )
 
-func StopRoute(w http.ResponseWriter, r *http.Request){
+func StopRoute(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/stop/prometheus":
 		StopContainer("prometheus")
 		fmt.Println(w, "prometheus stopped")
+	case "/stop/malwaretotal":
+		StopContainer("malwaretotal")
+		fmt.Println(w, "malwaretotal stopped")
 	}
 }
 
@@ -25,4 +28,3 @@ func StopContainer(containerName string) {
 	if err := cli.ContainerStop(ctx, containerName, nil); err != nil {
 	}
 }
-

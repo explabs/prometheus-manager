@@ -1,4 +1,4 @@
-module github.com/explabs/prometheus-manager
+module github.com/explabs/service-manager
 
 go 1.16
 
@@ -12,4 +12,5 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/grpc v1.41.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )

@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var DestConfigPath = "/etc/prometheus/prometheus.yml"
+
 type PrometheusConfig struct {
 	Global struct {
 		ScrapeInterval     string `yaml:"scrape_interval"`

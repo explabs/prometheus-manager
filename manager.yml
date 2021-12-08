@@ -1,0 +1,15 @@
+services:
+  - name: prometheus
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./monitoring/prometheus/:/etc/prometheus/"
+      - "./monitoring/prometheus/data:/data"
+  - name: malwaretotal
+    image: explabs/malwaretotal
+    ports:
+      - "9092:8080"
+    volumes:
+      - "./configs/malware.json:/app/malware.json"
+
