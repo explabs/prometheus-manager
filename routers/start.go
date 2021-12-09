@@ -56,7 +56,6 @@ func StartRoute(w http.ResponseWriter, r *http.Request) {
 	c.LoadConfig("manager.yml")
 	switch r.URL.Path {
 	case "/start/prometheus":
-
 		StartContainer(c.SearchByName("prometheus"))
 		fmt.Println(w, "prometheus started")
 	case "/start/malwaretotal":
@@ -104,12 +103,12 @@ func StartContainer(s *Service) error {
 			Target: target,
 		})
 	}
-	var ports nat.PortMap
+	var ports = make(nat.PortMap)
 	for _, port := range s.Ports {
 		array := strings.Split(port, ":")
 		source := array[0]
 		target := array[1]
-		ports = nat.PortMap{nat.Port(source + "/" + "tcp"): []nat.PortBinding{{HostPort: target}}}
+		ports[nat.Port(target+"/"+"tcp")] = []nat.PortBinding{{HostPort: source}}
 	}
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: s.Image,
